@@ -65,6 +65,7 @@ const microphoneBrowser = (async () => {
 
         await page.goto(JOIN_URL);
         
+        // Join Microphone
         await page.waitForSelector(selectors.microphone_button);
         await page.click(selectors.microphone_button);
 
@@ -113,7 +114,7 @@ const listenOnlyBrowser = (async () => {
 
         await page.goto(JOIN_URL);
         
-        // Close audio modal
+        // Join listen only
         log('listenonly-main', 'Wait for listen only button');
         await page.waitForSelector(selectors.listen_only_button);
 
