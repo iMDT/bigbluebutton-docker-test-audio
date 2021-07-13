@@ -66,7 +66,12 @@ const microphoneBrowser = (async () => {
         await page.goto(JOIN_URL);
         
         // Join Microphone
-        await page.waitForSelector(selectors.microphone_button);
+        try {
+            await page.waitForSelector(selectors.microphone_button);
+        } catch (e) {
+            log('microphone-main', 'Microphone button timed out');
+            await screenshot(page, 'microphone', `${i}_microphone_button_timed_out`);
+        }
         await page.click(selectors.microphone_button);
 
         await page.waitForSelector(selectors.echo_is_audible_button);
@@ -74,7 +79,7 @@ const microphoneBrowser = (async () => {
 
         // Take one screenshot per second
         for(let i = 0; i < AUDIO_TIMEOUT; i ++ ) {
-            await screenshot(page, 'broadcaster', `${i}_seconds_after_share`);
+            await screenshot(page, 'microphone', `${i}_seconds_after_share`);
             await delay(1000);
         }
 
@@ -116,7 +121,12 @@ const listenOnlyBrowser = (async () => {
         
         // Join listen only
         log('listenonly-main', 'Wait for listen only button');
-        await page.waitForSelector(selectors.listen_only_button);
+        try {
+            await page.waitForSelector(selectors.listen_only_button);
+        } catch (e) {
+            log('listenonly-main', 'Listen only button timed out');
+            await screenshot(page, 'listenonly', `${i}_listen_only_button_timed_out`);
+        }
 
         log('listenonly-main', 'Click on listen only button');
         await page.click(selectors.listen_only_button);
@@ -125,7 +135,7 @@ const listenOnlyBrowser = (async () => {
 
         // Wait to see user talking
         for ( let i = 0 ; i<AUDIO_TIMEOUT; i ++) {
-            await screenshot(page, 'watcher', `${i}_seconds_after_join`);
+            await screenshot(page, 'listenonly', `${i}_seconds_after_join`);
             try {
                 // Wait for video tag
                 await page.waitForSelector(selectors.user_talking, { timeout: 1000 });
