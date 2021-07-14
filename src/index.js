@@ -143,7 +143,7 @@ const listenOnlyBrowser = (async () => {
                 await page.waitForSelector(selectors.user_talking, { timeout: 1000 });
                 testSuccess = true;
                 log('listenonly-main', 'Talking user detected!');
-                await delay(10000);
+                await delay(2000);
                 break;
             } catch (e) {
                 log('listenonly-main', 'No user talking yet...');
