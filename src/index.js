@@ -29,7 +29,7 @@ const selectors = {
     user_talking: "button[aria-label$='is talking']"
 };
 
-const AUDIO_TIMEOUT = 30;
+const AUDIO_TIMEOUT_SECONDS = 60;
 
 const browsers = [];
 
@@ -53,6 +53,7 @@ const microphoneBrowser = (async () => {
         browsers.push(browser);
 
         const page = await browser.newPage();
+        page.setDefaultTimeout(AUDIO_TIMEOUT_SECONDS*1000);
         page
         .on('console', message =>
             log('microphone-browser', `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
@@ -70,7 +71,7 @@ const microphoneBrowser = (async () => {
             await page.waitForSelector(selectors.microphone_button);
         } catch (e) {
             log('microphone-main', 'Microphone button timed out');
-            await screenshot(page, 'microphone', `${i}_microphone_button_timed_out`);
+            await screenshot(page, 'microphone', `microphone_button_timed_out`);
         }
         await page.click(selectors.microphone_button);
 
@@ -78,7 +79,7 @@ const microphoneBrowser = (async () => {
         await page.click(selectors.echo_is_audible_button);
 
         // Take one screenshot per second
-        for(let i = 0; i < AUDIO_TIMEOUT; i ++ ) {
+        for(let i = 0; i < AUDIO_TIMEOUT_SECONDS; i ++ ) {
             await screenshot(page, 'microphone', `${i}_seconds_after_share`);
             await delay(1000);
         }
@@ -107,6 +108,7 @@ const listenOnlyBrowser = (async () => {
         browsers.push(browser);
 
         const page = await browser.newPage();
+        page.setDefaultTimeout(AUDIO_TIMEOUT_SECONDS*1000);
         page
         .on('console', message =>
             log('listenonly-browser', `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
@@ -125,7 +127,7 @@ const listenOnlyBrowser = (async () => {
             await page.waitForSelector(selectors.listen_only_button);
         } catch (e) {
             log('listenonly-main', 'Listen only button timed out');
-            await screenshot(page, 'listenonly', `${i}_listen_only_button_timed_out`);
+            await screenshot(page, 'listenonly', `listen_only_button_timed_out`);
         }
 
         log('listenonly-main', 'Click on listen only button');
@@ -134,7 +136,7 @@ const listenOnlyBrowser = (async () => {
         let testSuccess = false;
 
         // Wait to see user talking
-        for ( let i = 0 ; i<AUDIO_TIMEOUT; i ++) {
+        for ( let i = 0 ; i<AUDIO_TIMEOUT_SECONDS; i ++) {
             await screenshot(page, 'listenonly', `${i}_seconds_after_join`);
             try {
                 // Wait for video tag
