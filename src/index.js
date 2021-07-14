@@ -35,7 +35,8 @@ function setupPageLoggers(page, role) {
             responseBody = await response.text();
         } catch (e) {
         }
-        log(`${role}-network`, `${response.status()} ${response.url()} ===> ${responseBody}`)
+        log(`${role}-network`, `${response.status()} ${response.url()}`)
+        log(`${role}-network-full`, `${response.status()} ${response.url()} ===> ${responseBody}`)
     })
     .on('requestfailed', request =>
         log(`${role}-browser`, `${request.failure().errorText} ${request.url()}`));
