@@ -1,3 +1,5 @@
+const AUDIO_TIMEOUT_SECONDS = 60;
+
 const puppeteer = require('puppeteer');
 const test_id = (new Date()).getTime();
 const fs = require('fs');
@@ -6,7 +8,7 @@ function delay(time) {
     return new Promise(function(resolve) { 
         setTimeout(resolve, time)
     });
- }
+}
 
 async function screenshot(page, who, action) {
     const now = new Date().toISOString().split('.')[0].replace(/T/g, ' ').replace(' ', '_').replace(/[:-]/g, '');
@@ -21,6 +23,24 @@ function log (who, text) {
     console.log(`${who}\t\t`, text);
 }
 
+function setupPageLoggers(page, role) {
+    page
+    .on('console', message =>
+        log(`${role}-browser`, `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
+    .on('pageerror', ({ message }) => 
+        log(`${role}-browser`, message)) 
+    .on('response', async response => {
+        let responseBody = ''; 
+        try {
+            responseBody = await response.text();
+        } catch (e) {
+        }
+        log(`${role}-network`, `${response.status()} ${response.url()} ===> ${responseBody}`)
+    })
+    .on('requestfailed', request =>
+        log(`${role}-browser`, `${request.failure().errorText} ${request.url()}`));
+}
+
 const selectors = {
     close_audio: "button[aria-label='Close Join audio modal']",
     microphone_button: "button[aria-label='Microphone']",
@@ -29,7 +49,10 @@ const selectors = {
     user_talking: "button[aria-label$='is talking']"
 };
 
-const AUDIO_TIMEOUT_SECONDS = 60;
+async function getAuthData(page) {
+    await page.evaluate ( () => JSON.stringify(require('/imports/ui/services/auth').default) );
+}
+
 
 const browsers = [];
 
@@ -54,15 +77,7 @@ const microphoneBrowser = (async () => {
 
         const page = await browser.newPage();
         page.setDefaultTimeout(AUDIO_TIMEOUT_SECONDS*1000);
-        page
-        .on('console', message =>
-            log('microphone-browser', `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
-        .on('pageerror', ({ message }) => 
-            log('microphone-browser', message)) 
-        // .on('response', response =>
-        //     log('microphone-browser', `${response.status()} ${response.url()}`))
-        .on('requestfailed', request =>
-            log('microphone-browser', `${request.failure().errorText} ${request.url()}`));
+        setupPageLoggers(page, 'microphone');
 
         await page.goto(JOIN_URL);
         
@@ -72,6 +87,7 @@ const microphoneBrowser = (async () => {
         } catch (e) {
             log('microphone-main', 'Microphone button timed out');
             await screenshot(page, 'microphone', `microphone_button_timed_out`);
+            log('microphone-main', `Auth data: ${await getAuthData(page)}`);
         }
         await page.click(selectors.microphone_button);
 
@@ -109,15 +125,7 @@ const listenOnlyBrowser = (async () => {
 
         const page = await browser.newPage();
         page.setDefaultTimeout(AUDIO_TIMEOUT_SECONDS*1000);
-        page
-        .on('console', message =>
-            log('listenonly-browser', `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
-        .on('pageerror', ({ message }) => 
-            log('listenonly-browser', message)) 
-        // .on('response', response =>
-        //     log('listenonly-browser', `${response.status()} ${response.url()}`))
-        .on('requestfailed', request =>
-            log('listenonly-browser', `${request.failure().errorText} ${request.url()}`));
+        setupPageLoggers(page, 'listenonly');
 
         await page.goto(JOIN_URL);
         
@@ -127,7 +135,9 @@ const listenOnlyBrowser = (async () => {
             await page.waitForSelector(selectors.listen_only_button);
         } catch (e) {
             log('listenonly-main', 'Listen only button timed out');
+            const authData = await page.evaluate ( () => JSON.stringify(require('/imports/ui/services/auth').default) );
             await screenshot(page, 'listenonly', `listen_only_button_timed_out`);
+            log('microphone-main', `Auth data: ${await getAuthData(page)}`);
         }
 
         log('listenonly-main', 'Click on listen only button');
