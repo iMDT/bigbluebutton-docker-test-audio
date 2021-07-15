@@ -51,7 +51,7 @@ const selectors = {
 };
 
 async function getAuthData(page) {
-    await page.evaluate ( () => JSON.stringify(require('/imports/ui/services/auth').default) );
+    return await page.evaluate ( () => JSON.stringify(require('/imports/ui/services/auth').default) );
 }
 
 
@@ -136,7 +136,6 @@ const listenOnlyBrowser = (async () => {
             await page.waitForSelector(selectors.listen_only_button);
         } catch (e) {
             log('listenonly-main', 'Listen only button timed out');
-            const authData = await page.evaluate ( () => JSON.stringify(require('/imports/ui/services/auth').default) );
             await screenshot(page, 'listenonly', `listen_only_button_timed_out`);
             log('microphone-main', `Auth data: ${await getAuthData(page)}`);
         }
