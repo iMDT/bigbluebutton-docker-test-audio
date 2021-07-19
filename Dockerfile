@@ -15,7 +15,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV CHROME_LOG_FILE /debug/chrome_debug.log
 
 # Install puppeteer so it's available in the container.
 RUN npm i puppeteer \
