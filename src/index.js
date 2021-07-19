@@ -71,7 +71,9 @@ const microphoneBrowser = (async () => {
                 '--disable-setuid-sandbox',
                 '--use-fake-ui-for-media-stream',
                 '--use-fake-device-for-media-stream',
-                '--allow-file-access'
+                '--allow-file-access',
+                '--enable-logging',
+                '--vmodule=*/webrtc/*=7'
             ],
         });
         browsers.push(browser);
