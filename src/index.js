@@ -20,7 +20,11 @@ function log (who, text) {
 
     const pad = `                              `;
     who = String(`${pad}${who}`).slice(-pad.length);
-    console.log(`${who}\t\t`, text);
+
+    // Skip logging network payloads to console
+    if(who.indexOf("-network-full")===-1) {
+        console.log(`${who}\t\t`, text);
+    }
 }
 
 function setupPageLoggers(page, role) {
